@@ -7,6 +7,7 @@ import Chart from "chart.js";
 // react plugin used to create charts
 import { Line, Bar } from "react-chartjs-2";
 import Api from "../api/Api";
+import { formatMoney } from "../utils/formatMoney";
 
 // reactstrap components
 import {
@@ -19,6 +20,8 @@ import {
   Nav,
   Input,
   Progress,
+  InputGroup,
+  InputGroupAddon,
   Table,
   Container,
   Row,
@@ -38,7 +41,8 @@ import Header from "components/Headers/Header.jsx";
 class Index extends React.Component {
   state = {
     activeNav: 1,
-    chartExample1Data: "data1"
+    chartExample1Data: "data1",
+    newBtcAdress: ""
   };
   constructor(props) {
     super(props);
@@ -91,20 +95,31 @@ class Index extends React.Component {
       bitcoin_price_history,
       bitcoin_price_history_chart_data
     });
-    console.log(bitcoin_price_history);
-    console.log(bitcoin_price_history_chart_data);
+  };
+  addNewBtcAddress = async () => {
+    this.api.addBitcoinAddress(this.state.newBtcAdress);
+    await this.refreshData();
+    this.setState({
+      newBtcAdress: ""
+    });
+  };
+  removeBitcoinAddress = async address => {
+    this.api.removeBitcoinAddress(address);
+    await this.refreshData();
   };
   componentWillMount() {
     if (window.Chart) {
       parseOptions(Chart, chartOptions());
     }
+    this.api.refreshAddressesFromLocalstorage();
     this.refreshData();
   }
   render() {
     const {
       portfolio,
       bitcoin_current_price_usd,
-      bitcoin_price_history_chart_data
+      bitcoin_price_history_chart_data,
+      newBtcAdress
     } = this.state;
 
     return (
@@ -124,7 +139,7 @@ class Index extends React.Component {
                       <h6 className="text-uppercase text-light ls-1 mb-1">
                         Overview
                       </h6>
-                      <h2 className="text-white mb-0">Portfolio value</h2>
+                      <h2 className="text-white mb-0">Bitcoin price</h2>
                     </div>
                     <div className="col">
                       <Nav className="justify-content-end" pills>
@@ -171,214 +186,70 @@ class Index extends React.Component {
                 </CardBody>
               </Card>
             </Col>
-            <Col xl="4">
-              <Card className="shadow">
-                <CardHeader className="bg-transparent">
-                  <Row className="align-items-center">
-                    <div className="col">
-                      <h6 className="text-uppercase text-muted ls-1 mb-1">
-                        Performance
-                      </h6>
-                      <h2 className="mb-0">Total orders</h2>
-                    </div>
-                  </Row>
-                </CardHeader>
-                <CardBody>
-                  {/* Chart */}
-                  <div className="chart">
-                    <Bar
-                      data={chartExample2.data}
-                      options={chartExample2.options}
-                    />
-                  </div>
-                </CardBody>
-              </Card>
-            </Col>
-          </Row>
-          <Row className="mt-5">
-            <Col className="mb-5 mb-xl-0" xl="8">
+            <Col className="mb-5 mb-xl-0" xl="4">
               <Card className="shadow">
                 <CardHeader className="border-0">
                   <Row className="align-items-center">
                     <div className="col">
-                      <h3 className="mb-0">Page visits</h3>
+                      <h3 className="mb-0">Addresses</h3>
                     </div>
                     <div className="col text-right">
-                      <Input type="text" />
-                      <Button
-                        color="primary"
-                        href="#pablo"
-                        onClick={e => e.preventDefault()}
-                        size="sm"
-                      >
-                        See all
-                      </Button>
+                      <InputGroup>
+                        <Input
+                          bsSize="sm"
+                          placeholder="BTC address"
+                          value={newBtcAdress}
+                          onChange={e =>
+                            this.setState({
+                              newBtcAdress: e.target.value
+                            })
+                          }
+                        />
+                        <InputGroupAddon addonType="append">
+                          <Button
+                            size="sm"
+                            color="primary"
+                            onClick={this.addNewBtcAddress}
+                          >
+                            Add
+                          </Button>
+                        </InputGroupAddon>
+                      </InputGroup>
                     </div>
                   </Row>
                 </CardHeader>
                 <Table className="align-items-center table-flush" responsive>
                   <thead className="thead-light">
                     <tr>
-                      <th scope="col">Page name</th>
-                      <th scope="col">Visitors</th>
-                      <th scope="col">Unique users</th>
-                      <th scope="col">Bounce rate</th>
+                      <th scope="col">Address</th>
+                      <th scope="col">Balance</th>
+                      <th scope="col">Action</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <th scope="row">/argon/</th>
-                      <td>4,569</td>
-                      <td>340</td>
-                      <td>
-                        <i className="fas fa-arrow-up text-success mr-3" />{" "}
-                        46,53%
-                      </td>
-                    </tr>
-                    <tr>
-                      <th scope="row">/argon/index.html</th>
-                      <td>3,985</td>
-                      <td>319</td>
-                      <td>
-                        <i className="fas fa-arrow-down text-warning mr-3" />{" "}
-                        46,53%
-                      </td>
-                    </tr>
-                    <tr>
-                      <th scope="row">/argon/charts.html</th>
-                      <td>3,513</td>
-                      <td>294</td>
-                      <td>
-                        <i className="fas fa-arrow-down text-warning mr-3" />{" "}
-                        36,49%
-                      </td>
-                    </tr>
-                    <tr>
-                      <th scope="row">/argon/tables.html</th>
-                      <td>2,050</td>
-                      <td>147</td>
-                      <td>
-                        <i className="fas fa-arrow-up text-success mr-3" />{" "}
-                        50,87%
-                      </td>
-                    </tr>
-                    <tr>
-                      <th scope="row">/argon/profile.html</th>
-                      <td>1,795</td>
-                      <td>190</td>
-                      <td>
-                        <i className="fas fa-arrow-down text-danger mr-3" />{" "}
-                        46,53%
-                      </td>
-                    </tr>
-                  </tbody>
-                </Table>
-              </Card>
-            </Col>
-            <Col xl="4">
-              <Card className="shadow">
-                <CardHeader className="border-0">
-                  <Row className="align-items-center">
-                    <div className="col">
-                      <h3 className="mb-0">Social traffic</h3>
-                    </div>
-                    <div className="col text-right">
-                      <Button
-                        color="primary"
-                        href="#pablo"
-                        onClick={e => e.preventDefault()}
-                        size="sm"
-                      >
-                        See all
-                      </Button>
-                    </div>
-                  </Row>
-                </CardHeader>
-                <Table className="align-items-center table-flush" responsive>
-                  <thead className="thead-light">
-                    <tr>
-                      <th scope="col">Referral</th>
-                      <th scope="col">Visitors</th>
-                      <th scope="col" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <th scope="row">Facebook</th>
-                      <td>1,480</td>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <span className="mr-2">60%</span>
-                          <div>
-                            <Progress
-                              max="100"
-                              value="60"
-                              barClassName="bg-gradient-danger"
-                            />
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Facebook</th>
-                      <td>5,480</td>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <span className="mr-2">70%</span>
-                          <div>
-                            <Progress
-                              max="100"
-                              value="70"
-                              barClassName="bg-gradient-success"
-                            />
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Google</th>
-                      <td>4,807</td>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <span className="mr-2">80%</span>
-                          <div>
-                            <Progress max="100" value="80" />
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Instagram</th>
-                      <td>3,678</td>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <span className="mr-2">75%</span>
-                          <div>
-                            <Progress
-                              max="100"
-                              value="75"
-                              barClassName="bg-gradient-info"
-                            />
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th scope="row">twitter</th>
-                      <td>2,645</td>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <span className="mr-2">30%</span>
-                          <div>
-                            <Progress
-                              max="100"
-                              value="30"
-                              barClassName="bg-gradient-warning"
-                            />
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
+                    {portfolio &&
+                      portfolio.addresses.map(address => (
+                        <tr key={address.address}>
+                          <th
+                            scope="row"
+                            style={{ maxWidth: "200px", overflow: "scroll" }}
+                          >
+                            {address.address}
+                          </th>
+                          <td>{formatMoney(address.balance_usd)} $</td>
+                          <td>
+                            <Button
+                              color="danger"
+                              size="sm"
+                              onClick={() =>
+                                this.removeBitcoinAddress(address.address)
+                              }
+                            >
+                              Remove
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </Table>
               </Card>

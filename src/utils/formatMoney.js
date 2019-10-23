@@ -1,7 +1,7 @@
 var SI_SYMBOL = ["", "k", "M", "G", "T", "P", "E"];
 
 export function formatMoney(number) {
-  if (!number) {
+  if (isNaN(number)) {
     return null;
   }
   // what tier? (determines SI symbol)

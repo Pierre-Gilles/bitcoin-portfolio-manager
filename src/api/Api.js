@@ -1,5 +1,6 @@
 import BitcoinApi from "./BitcoinApi";
 
+const LOCAL_STORAGE_ADDRESSES_KEY = "bitcoin-portfolio-bitcoin-addresses";
 const oneBitcoinInSatoshi = 100 * 1000 * 1000;
 
 export default class Api {
@@ -7,8 +8,28 @@ export default class Api {
     this.bitcoinAddresses = [];
     this.bitcoinHistoryPrices = null;
   }
+  refreshAddressesFromLocalstorage() {
+    const addresses = localStorage.getItem(LOCAL_STORAGE_ADDRESSES_KEY);
+    if (addresses) {
+      this.bitcoinAddresses = JSON.parse(addresses);
+    }
+  }
   addBitcoinAddress(address) {
+    if (this.bitcoinAddresses.indexOf(address) !== -1) {
+      return null;
+    }
     this.bitcoinAddresses.push(address);
+    localStorage.setItem(
+      LOCAL_STORAGE_ADDRESSES_KEY,
+      JSON.stringify(this.bitcoinAddresses)
+    );
+  }
+  removeBitcoinAddress(address) {
+    this.bitcoinAddresses = this.bitcoinAddresses.filter(a => a !== address);
+    localStorage.setItem(
+      LOCAL_STORAGE_ADDRESSES_KEY,
+      JSON.stringify(this.bitcoinAddresses)
+    );
   }
   async syncBitcoinPrice() {
     this.bitcoinCurrentPrice = await BitcoinApi.getBitcoinCurrentPrice();
@@ -52,6 +73,7 @@ export default class Api {
       total.sent_btc += parseFloat(totalSent);
       total.sent_usd += this.convertBtcToUsd(totalSent);
       return {
+        address: addressInfo.address,
         balance_btc: parseFloat(finalBalance),
         balance_usd: this.convertBtcToUsd(finalBalance)
       };

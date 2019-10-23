@@ -1,4 +1,5 @@
 import BitcoinApi from "./BitcoinApi";
+import { UserSession } from "blockstack";
 
 const LOCAL_STORAGE_ADDRESSES_KEY = "bitcoin-portfolio-bitcoin-addresses";
 const oneBitcoinInSatoshi = 100 * 1000 * 1000;
@@ -8,11 +9,27 @@ export default class Api {
     this.bitcoinAddresses = [];
     this.bitcoinHistoryPrices = null;
   }
-  refreshAddressesFromLocalstorage() {
+  async initBlockstack() {
+    this.userSession = new UserSession();
+    if (this.userSession.isSignInPending()) {
+      const { profile } = await this.userSession.handlePendingSignIn();
+      this.profile = profile;
+      return true;
+    }
+    return this.userSession.isUserSignedIn();
+  }
+  redirectToSignin() {
+    this.userSession.redirectToSignIn();
+  }
+  signout() {
+    this.userSession.signUserOut();
+  }
+  async refreshAddressesFromLocalstorage() {
     const addresses = localStorage.getItem(LOCAL_STORAGE_ADDRESSES_KEY);
     if (addresses) {
       this.bitcoinAddresses = JSON.parse(addresses);
     }
+    const file = await this.userSession.getFile();
   }
   addBitcoinAddress(address) {
     if (this.bitcoinAddresses.indexOf(address) !== -1) {

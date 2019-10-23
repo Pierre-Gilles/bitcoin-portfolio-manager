@@ -1,9 +1,25 @@
 import React from "react";
 
+import Api from "../../api/Api";
+
 // reactstrap components
 import { Button, Card, CardHeader, Col } from "reactstrap";
 
 class Login extends React.Component {
+  constructor(props) {
+    super(props);
+    this.api = new Api();
+  }
+  redirectToLogin = e => {
+    e.preventDefault();
+    this.api.redirectToSignin();
+  };
+  async componentDidMount() {
+    const userLoggedIn = await this.api.initBlockstack();
+    if (userLoggedIn) {
+      window.location = "/admin/index";
+    }
+  }
   render() {
     return (
       <>
@@ -17,8 +33,7 @@ class Login extends React.Component {
                 <Button
                   className="btn-neutral btn-icon"
                   color="default"
-                  href="#pablo"
-                  onClick={e => e.preventDefault()}
+                  onClick={e => this.redirectToLogin(e)}
                 >
                   <span className="btn-inner--icon">
                     <img

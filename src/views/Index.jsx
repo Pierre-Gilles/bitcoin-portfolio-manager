@@ -107,9 +107,13 @@ class Index extends React.Component {
     this.api.removeBitcoinAddress(address);
     await this.refreshData();
   };
-  componentWillMount() {
+  async componentWillMount() {
     if (window.Chart) {
       parseOptions(Chart, chartOptions());
+    }
+    const userLoggedIn = await this.api.initBlockstack();
+    if (!userLoggedIn) {
+      window.location = "/auth/login";
     }
     this.api.refreshAddressesFromLocalstorage();
     this.refreshData();

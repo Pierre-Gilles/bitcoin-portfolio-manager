@@ -1,0 +1,12 @@
+{
+  "name": "Bitcoin Portfolio",
+  "start_url": "https://app.bitcoinportfolio.me",
+  "description": "A Decentralized Bitcoin Portfolio Manager",
+  "icons": [
+    {
+      "src": "https://app.bitcoinportfolio.me/apple-icon.png",
+      "sizes": "400x400",
+      "type": "image/png"
+    }
+  ]
+}

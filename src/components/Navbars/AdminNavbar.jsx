@@ -1,5 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import Api from "../../api/Api";
+
 // reactstrap components
 import {
   DropdownMenu,
@@ -13,7 +15,28 @@ import {
 } from "reactstrap";
 
 class AdminNavbar extends React.Component {
+  constructor(props) {
+    super(props);
+    this.api = new Api();
+    this.state = {
+      profile: {}
+    };
+  }
+  signout = e => {
+    e.preventDefault();
+    this.api.signout();
+    window.location = "/auth/login";
+  };
+  async componentDidMount() {
+    const profile = await this.api.initBlockstack();
+    if (profile) {
+      this.setState({
+        profile
+      });
+    }
+  }
   render() {
+    const { profile } = this.state;
     return (
       <>
         <Navbar className="navbar-top navbar-dark" expand="md" id="navbar-main">
@@ -28,15 +51,17 @@ class AdminNavbar extends React.Component {
               <UncontrolledDropdown nav>
                 <DropdownToggle className="pr-0" nav>
                   <Media className="align-items-center">
-                    <span className="avatar avatar-sm rounded-circle">
-                      <img
-                        alt="..."
-                        src={require("assets/img/theme/team-4-800x800.jpg")}
-                      />
-                    </span>
+                    {false && (
+                      <span className="avatar avatar-sm rounded-circle">
+                        <img
+                          alt="..."
+                          src={require("assets/img/theme/team-4-800x800.jpg")}
+                        />
+                      </span>
+                    )}
                     <Media className="ml-2 d-none d-lg-block">
                       <span className="mb-0 text-sm font-weight-bold">
-                        Jessica Jones
+                        {profile.username}
                       </span>
                     </Media>
                   </Media>
@@ -46,7 +71,7 @@ class AdminNavbar extends React.Component {
                     <h6 className="text-overflow m-0">Welcome!</h6>
                   </DropdownItem>
                   <DropdownItem divider />
-                  <DropdownItem href="#pablo" onClick={e => e.preventDefault()}>
+                  <DropdownItem onClick={this.signout}>
                     <i className="ni ni-user-run" />
                     <span>Logout</span>
                   </DropdownItem>

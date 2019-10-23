@@ -13,11 +13,16 @@ export default class Api {
   async initBlockstack() {
     this.userSession = new UserSession();
     if (this.userSession.isSignInPending()) {
-      const { profile } = await this.userSession.handlePendingSignIn();
-      this.profile = profile;
-      return true;
+      const userData = await this.userSession.handlePendingSignIn();
+      this.userData = userData;
+      return userData;
+    } else if (this.userSession.isUserSignedIn()) {
+      const userData = await this.userSession.loadUserData();
+      this.userData = userData;
+      return userData;
+    } else {
+      return null;
     }
-    return this.userSession.isUserSignedIn();
   }
   redirectToSignin() {
     const redirectURI = `${window.location.origin}/admin/index`;
@@ -32,10 +37,20 @@ export default class Api {
       this.bitcoinAddresses = JSON.parse(addresses);
     }
     try {
-      const remoteAddresses = this.userSession.getFile(REMOTE_ADRESSES_KEY);
+      const remoteAddresses = await this.userSession.getFile(
+        REMOTE_ADRESSES_KEY
+      );
       if (remoteAddresses) {
         this.bitcoinAddresses = JSON.parse(remoteAddresses);
-        localStorage.setItem(remoteAddresses);
+        localStorage.setItem(remoteAddresses, remoteAddresses);
+      } else {
+        await this.userSession.putFile(
+          REMOTE_ADRESSES_KEY,
+          JSON.stringify(this.bitcoinAddresses),
+          {
+            encrypt: true
+          }
+        );
       }
     } catch (e) {
       console.log(e);
@@ -112,7 +127,7 @@ export default class Api {
         balance_usd: this.convertBtcToUsd(finalBalance)
       };
     });
-    console.log(total, addresses);
+
     return {
       addresses,
       total

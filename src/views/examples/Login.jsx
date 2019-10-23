@@ -35,12 +35,6 @@ class Login extends React.Component {
                   color="default"
                   onClick={e => this.redirectToLogin(e)}
                 >
-                  <span className="btn-inner--icon">
-                    <img
-                      alt="..."
-                      src={require("assets/img/icons/common/github.svg")}
-                    />
-                  </span>
                   <span className="btn-inner--text">Blockstack</span>
                 </Button>
               </div>

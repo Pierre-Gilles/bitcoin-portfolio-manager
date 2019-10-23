@@ -1,11 +1,11 @@
 import React from "react";
-import get from "get-value";
+
 // node.js library that concatenates classes (strings)
 import classnames from "classnames";
 // javascipt plugin for creating charts
 import Chart from "chart.js";
 // react plugin used to create charts
-import { Line, Bar } from "react-chartjs-2";
+import { Line } from "react-chartjs-2";
 import Api from "../api/Api";
 import { formatMoney } from "../utils/formatMoney";
 
@@ -19,7 +19,6 @@ import {
   NavLink,
   Nav,
   Input,
-  Progress,
   InputGroup,
   InputGroupAddon,
   Table,
@@ -32,8 +31,7 @@ import {
 import {
   chartOptions,
   parseOptions,
-  chartExample1,
-  chartExample2
+  chartExample1
 } from "variables/charts.jsx";
 
 import Header from "components/Headers/Header.jsx";
@@ -111,9 +109,13 @@ class Index extends React.Component {
     if (window.Chart) {
       parseOptions(Chart, chartOptions());
     }
-    const userLoggedIn = await this.api.initBlockstack();
-    if (!userLoggedIn) {
+    const userProfile = await this.api.initBlockstack();
+    if (!userProfile) {
       window.location = "/auth/login";
+    } else {
+      this.setState({
+        userProfile
+      });
     }
     await this.api.refreshAddressesFromLocalstorage();
     this.refreshData();
@@ -121,6 +123,7 @@ class Index extends React.Component {
   render() {
     const {
       portfolio,
+      userProfile,
       bitcoin_current_price_usd,
       bitcoin_price_history_chart_data,
       newBtcAdress
@@ -131,6 +134,7 @@ class Index extends React.Component {
         <Header
           portfolio={portfolio}
           bitcoin_current_price_usd={bitcoin_current_price_usd}
+          userProfile={userProfile}
         />
         {/* Page content */}
         <Container className="mt--7" fluid>

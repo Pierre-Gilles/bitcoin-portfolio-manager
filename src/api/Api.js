@@ -30,6 +30,16 @@ export default class Api {
   }
   signout() {
     this.userSession.signUserOut();
+    localStorage.clear();
+  }
+  async syncBlockstackFile() {
+    await this.userSession.putFile(
+      REMOTE_ADRESSES_KEY,
+      JSON.stringify(this.bitcoinAddresses),
+      {
+        encrypt: true
+      }
+    );
   }
   async refreshAddressesFromLocalstorage() {
     const addresses = localStorage.getItem(LOCAL_STORAGE_ADDRESSES_KEY);
@@ -44,13 +54,7 @@ export default class Api {
         this.bitcoinAddresses = JSON.parse(remoteAddresses);
         localStorage.setItem(remoteAddresses, remoteAddresses);
       } else {
-        await this.userSession.putFile(
-          REMOTE_ADRESSES_KEY,
-          JSON.stringify(this.bitcoinAddresses),
-          {
-            encrypt: true
-          }
-        );
+        await this.syncBlockstackFile();
       }
     } catch (e) {
       console.log(e);
@@ -65,20 +69,15 @@ export default class Api {
       LOCAL_STORAGE_ADDRESSES_KEY,
       JSON.stringify(this.bitcoinAddresses)
     );
-    await this.userSession.putFile(
-      REMOTE_ADRESSES_KEY,
-      JSON.stringify(this.bitcoinAddresses),
-      {
-        encrypt: true
-      }
-    );
+    await this.syncBlockstackFile();
   }
-  removeBitcoinAddress(address) {
+  async removeBitcoinAddress(address) {
     this.bitcoinAddresses = this.bitcoinAddresses.filter(a => a !== address);
     localStorage.setItem(
       LOCAL_STORAGE_ADDRESSES_KEY,
       JSON.stringify(this.bitcoinAddresses)
     );
+    await this.syncBlockstackFile();
   }
   async syncBitcoinPrice() {
     this.bitcoinCurrentPrice = await BitcoinApi.getBitcoinCurrentPrice();

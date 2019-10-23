@@ -20,7 +20,8 @@ export default class Api {
     return this.userSession.isUserSignedIn();
   }
   redirectToSignin() {
-    this.userSession.redirectToSignIn();
+    const redirectURI = `${window.location.origin}/admin/index`;
+    this.userSession.redirectToSignIn(redirectURI);
   }
   signout() {
     this.userSession.signUserOut();

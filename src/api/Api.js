@@ -24,6 +24,9 @@ export default class Api {
       return null;
     }
   }
+  async resetAccount() {
+    await this.userSession.deleteFile(REMOTE_ADRESSES_KEY);
+  }
   redirectToSignin() {
     const redirectURI = `${window.location.origin}/admin/index`;
     this.userSession.redirectToSignIn(redirectURI);

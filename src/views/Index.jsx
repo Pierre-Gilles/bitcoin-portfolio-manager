@@ -1,10 +1,13 @@
 import React from "react";
+import get from "get-value";
 // node.js library that concatenates classes (strings)
 import classnames from "classnames";
 // javascipt plugin for creating charts
 import Chart from "chart.js";
 // react plugin used to create charts
 import { Line, Bar } from "react-chartjs-2";
+import Api from "../api/Api";
+
 // reactstrap components
 import {
   Button,
@@ -14,6 +17,7 @@ import {
   NavItem,
   NavLink,
   Nav,
+  Input,
   Progress,
   Table,
   Container,
@@ -36,6 +40,10 @@ class Index extends React.Component {
     activeNav: 1,
     chartExample1Data: "data1"
   };
+  constructor(props) {
+    super(props);
+    this.api = new Api();
+  }
   toggleNavs = (e, index) => {
     e.preventDefault();
     this.setState({
@@ -50,15 +58,61 @@ class Index extends React.Component {
     setTimeout(() => wow(), 1000);
     // this.chartReference.update();
   };
+  formatChatBtcPrice = bitcoin_price_history => {
+    const bitcoin_price_history_chart_data = {
+      labels: [],
+      datasets: [
+        {
+          label: "Bitcoin Price",
+          data: []
+        }
+      ]
+    };
+    bitcoin_price_history.forEach(month => {
+      bitcoin_price_history_chart_data.labels.push(month.date);
+      bitcoin_price_history_chart_data.datasets[0].data.push(
+        Math.round(month.price)
+      );
+    });
+    return bitcoin_price_history_chart_data;
+  };
+  refreshData = async () => {
+    const {
+      bitcoin_current_price_usd,
+      bitcoin_price_history
+    } = await this.api.syncBitcoinPrice();
+    const bitcoin_price_history_chart_data = this.formatChatBtcPrice(
+      bitcoin_price_history
+    );
+    const portfolio = await this.api.getPortfolio();
+    this.setState({
+      portfolio,
+      bitcoin_current_price_usd,
+      bitcoin_price_history,
+      bitcoin_price_history_chart_data
+    });
+    console.log(bitcoin_price_history);
+    console.log(bitcoin_price_history_chart_data);
+  };
   componentWillMount() {
     if (window.Chart) {
       parseOptions(Chart, chartOptions());
     }
+    this.refreshData();
   }
   render() {
+    const {
+      portfolio,
+      bitcoin_current_price_usd,
+      bitcoin_price_history_chart_data
+    } = this.state;
+
     return (
       <>
-        <Header />
+        <Header
+          portfolio={portfolio}
+          bitcoin_current_price_usd={bitcoin_current_price_usd}
+        />
         {/* Page content */}
         <Container className="mt--7" fluid>
           <Row>
@@ -105,13 +159,15 @@ class Index extends React.Component {
                 </CardHeader>
                 <CardBody>
                   {/* Chart */}
-                  <div className="chart">
-                    <Line
-                      data={chartExample1[this.state.chartExample1Data]}
-                      options={chartExample1.options}
-                      getDatasetAtEvent={e => console.log(e)}
-                    />
-                  </div>
+                  {bitcoin_price_history_chart_data && (
+                    <div className="chart">
+                      <Line
+                        data={bitcoin_price_history_chart_data}
+                        options={chartExample1.options}
+                        getDatasetAtEvent={e => console.log(e)}
+                      />
+                    </div>
+                  )}
                 </CardBody>
               </Card>
             </Col>
@@ -148,6 +204,7 @@ class Index extends React.Component {
                       <h3 className="mb-0">Page visits</h3>
                     </div>
                     <div className="col text-right">
+                      <Input type="text" />
                       <Button
                         color="primary"
                         href="#pablo"

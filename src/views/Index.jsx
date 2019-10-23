@@ -2,12 +2,14 @@ import React from "react";
 
 // node.js library that concatenates classes (strings)
 import classnames from "classnames";
+import qs from "querystringify";
 // javascipt plugin for creating charts
 import Chart from "chart.js";
 // react plugin used to create charts
 import { Line } from "react-chartjs-2";
 import Api from "../api/Api";
 import { formatMoney } from "../utils/formatMoney";
+import { withRouter } from "react-router";
 
 // reactstrap components
 import {
@@ -105,6 +107,11 @@ class Index extends React.Component {
     this.api.removeBitcoinAddress(address);
     await this.refreshData();
   };
+  cleanUrl = () => {
+    const url = new URL(window.location);
+    url.searchParams.delete("authResponse");
+    this.props.history.push(url.pathname + url.search);
+  };
   async componentWillMount() {
     if (window.Chart) {
       parseOptions(Chart, chartOptions());
@@ -119,6 +126,10 @@ class Index extends React.Component {
     }
     await this.api.refreshAddressesFromLocalstorage();
     this.refreshData();
+    const { authResponse } = qs.parse(this.props.location.search);
+    if (authResponse) {
+      this.cleanUrl();
+    }
   }
   render() {
     const {
@@ -271,4 +282,4 @@ class Index extends React.Component {
   }
 }
 
-export default Index;
+export default withRouter(Index);

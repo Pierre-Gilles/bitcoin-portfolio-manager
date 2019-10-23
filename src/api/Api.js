@@ -12,12 +12,12 @@ export default class Api {
   }
   async initBlockstack() {
     this.userSession = new UserSession();
-    if (this.userSession.isSignInPending()) {
-      const userData = await this.userSession.handlePendingSignIn();
+    if (this.userSession.isUserSignedIn()) {
+      const userData = await this.userSession.loadUserData();
       this.userData = userData;
       return userData;
-    } else if (this.userSession.isUserSignedIn()) {
-      const userData = await this.userSession.loadUserData();
+    } else if (this.userSession.isSignInPending()) {
+      const userData = await this.userSession.handlePendingSignIn();
       this.userData = userData;
       return userData;
     } else {

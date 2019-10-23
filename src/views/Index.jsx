@@ -113,9 +113,9 @@ class Index extends React.Component {
     }
     const userLoggedIn = await this.api.initBlockstack();
     if (!userLoggedIn) {
-      // window.location = "/auth/login";
+      window.location = "/auth/login";
     }
-    this.api.refreshAddressesFromLocalstorage();
+    await this.api.refreshAddressesFromLocalstorage();
     this.refreshData();
   }
   render() {

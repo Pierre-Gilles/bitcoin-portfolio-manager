@@ -2,6 +2,7 @@ import BitcoinApi from "./BitcoinApi";
 import { UserSession } from "blockstack";
 
 const LOCAL_STORAGE_ADDRESSES_KEY = "bitcoin-portfolio-bitcoin-addresses";
+const REMOTE_ADRESSES_KEY = "bitcoin-portfolio-bitcoin-addresses.json";
 const oneBitcoinInSatoshi = 100 * 1000 * 1000;
 
 export default class Api {
@@ -29,9 +30,17 @@ export default class Api {
     if (addresses) {
       this.bitcoinAddresses = JSON.parse(addresses);
     }
-    const file = await this.userSession.getFile();
+    try {
+      const remoteAddresses = this.userSession.getFile(REMOTE_ADRESSES_KEY);
+      if (remoteAddresses) {
+        this.bitcoinAddresses = JSON.parse(remoteAddresses);
+        localStorage.setItem(remoteAddresses);
+      }
+    } catch (e) {
+      console.log(e);
+    }
   }
-  addBitcoinAddress(address) {
+  async addBitcoinAddress(address) {
     if (this.bitcoinAddresses.indexOf(address) !== -1) {
       return null;
     }
@@ -39,6 +48,13 @@ export default class Api {
     localStorage.setItem(
       LOCAL_STORAGE_ADDRESSES_KEY,
       JSON.stringify(this.bitcoinAddresses)
+    );
+    await this.userSession.putFile(
+      REMOTE_ADRESSES_KEY,
+      JSON.stringify(this.bitcoinAddresses),
+      {
+        encrypt: true
+      }
     );
   }
   removeBitcoinAddress(address) {

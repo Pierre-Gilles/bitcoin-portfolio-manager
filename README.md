@@ -16,7 +16,7 @@
 <p align="center">
   <a href="#key-features">Key Features</a> •
   <a href="#stack">Stack</a> •
-  <a href="#how-to-use">Contributing</a> •
+  <a href="#contributing">Contributing</a> •
   <a href="#license">License</a>
 </p>
 
